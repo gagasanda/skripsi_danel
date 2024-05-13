@@ -1,3 +1,13 @@
+<?php
+include 'koneksidb.php';
+session_start();
+
+if (isset($_POST['logout'])) {
+session_destroy();
+header("Location: index.php");
+exit();
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +31,17 @@
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+     <style type="text/css">
+        #mapid { height: 300px; 
+        
+        }
+        </style>
 </head>
 
 <body id="page-top">
@@ -44,7 +65,7 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -80,8 +101,8 @@
                 </a>
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#collapseTwo">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="login.html">Daftar Laporan</a>
-                        <a class="collapse-item" href="register.html">Data User</a>
+                        <a class="collapse-item" href="daftarlaporan.php">Daftar Laporan</a>
+                        <a class="collapse-item" href="datauser.php">Data User</a>
                        
                     </div>
                 </div>
@@ -156,31 +177,50 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php if(isset($_SESSION['nama'])){echo $_SESSION['nama'];}else{echo "Login ?";} ?></span>
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            <?php if (isset($_SESSION['level'])){ $level = $_SESSION['level']; if ($level=='user'){ ?>
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                </div>
+                           
+                            <?php } elseif ($level=='admin') {?>
+                                
+
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+
+                                <a class="dropdown-item" href="index.php">
+                                    <i class="fas fa-home fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Home
+                                </a>
+                                    <a class="dropdown-item" href="dashboard.php">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
+                                    Dashboard
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
+                    
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
                             </div>
+                                <?php }} else { ?>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="login.php" >
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    login
+                                </a>
+                            <?php } ?>
+                           
                         </li>
 
                     </ul>
@@ -203,8 +243,9 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Tabel Data Lokasi</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                                Jumlah Semua Data</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php $dol = mysqli_query($db, "SELECT * FROM data_jalan 
+                                    "); $a = $dol->num_rows; echo $a;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -221,8 +262,9 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Tambah Data Lokasi</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                                                Jumlah Data DItampilkan</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php $dol = mysqli_query($db, "SELECT * FROM data_jalan  WHERE status=1
+                                    "); $a = $dol->num_rows; echo $a;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -238,11 +280,12 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Data User
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Jumlah User
                                             </div>
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><?php $dol = mysqli_query($db, "SELECT * FROM user 
+                                    "); $a = $dol->num_rows; echo $a;?></div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="progress progress-sm mr-2">
@@ -268,8 +311,9 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Data Yang DIlaporkan</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                                Data Masuk</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php $dol = mysqli_query($db, "SELECT * FROM data_jalan WHERE status=0
+                                    "); $a = $dol->num_rows; echo $a;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -286,12 +330,7 @@
                                     <h6 class="m-0 font-weight-bold text-primary">Maps Index</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
-                                </div>
+                                <div id="mapid"></div>
                             </div>
 
                  
@@ -323,21 +362,23 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     <!-- Logout Modal-->
+     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="test"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Logout</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body">Yakin Keluar dari akun ini ?</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <form action="" method="POST">
+                    <button name="logout"  class="btn btn-primary">Logout</button>
+                    </from>
                 </div>
             </div>
         </div>
@@ -359,6 +400,24 @@
     <!-- Page level custom scripts -->
     <script src="js/demo/chart-area-demo.js"></script>
     <script src="js/demo/chart-pie-demo.js"></script>
+
+    <script> 
+                            var mymap = L.map('mapid').setView([-7.8030634,110.3229557], 11);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(mymap);
+            
+
+            <?php 
+            include("koneksidb.php");
+            $result = mysqli_query($db, "SELECT * FROM data_jalan 
+            WHERE status=1");
+            while($data_lokasi = mysqli_fetch_array($result)) { ?>
+            L.marker([<?php echo $data_lokasi['latitude'];?>,<?php echo $data_lokasi['longitude'];?>]).addTo(mymap)
+            .bindPopup('<Center><b>Lokasi:</b><br><?php echo $data_lokasi['alamat'];?><br><b>Keterangan:</b><br><?php echo $data_lokasi['keterangan'];?>');
+            <?php } ?>
+
+</script>
 
 </body>
 

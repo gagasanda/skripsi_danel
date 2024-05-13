@@ -8,31 +8,12 @@ header("Location: index.php");
 exit();
 }
 
-if (isset($_POST['submit'])) {
-    $latitude = $_POST['latitude'];
-    $logitude = $_POST['longitude']; 
-    $tanggal = $_POST['tanggal'];  
-    $kabupaten = $_POST['kabupaten'];
-    $alamat = $_POST['alamat'];
-    $kondisi = $_POST['kondisi'];
-    $keterangan = $_POST['keterangan'];
-    $foto = $_FILES['foto']['name'];
-    $rand = rand();
-    $id_user = 2;
-    $status = 1;
-    
-   $fotodb = $rand.'_'.$foto;   
-move_uploaded_file($_FILES['foto']['tmp_name'], 'foto/'.$rand.'_'.$foto);
-$sql = "INSERT INTO data_jalan (id_user, latitude, longitude, tanggal, id_kabupaten, alamat, kondisi_jalan, keterangan, foto, status)
-VALUES ('$id_user','$latitude', '$logitude', '$tanggal', '$kabupaten', '$alamat', '$kondisi', '$keterangan', '$fotodb', '$status')";
-mysqli_query($db, $sql);
-
-$message = 'Data Berhasil Di Tambahkan';
-echo "<SCRIPT> //not showing me this
-        alert('$message')
-        window.location.replace('tabeldata.php');
-    </SCRIPT>";
+if (isset($_POST['hapus'])) {
+$id_dt = $_POST['id_data'];
+$result = mysqli_query($db, "DELETE FROM user WHERE id_user=$id_dt");
+header("Location:datauser.php");
 }
+
 ?>
 
 
@@ -58,13 +39,26 @@ echo "<SCRIPT> //not showing me this
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.6/css/dataTables.bootstrap4.css" />
+  
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script defer src="https://cdn.datatables.net/2.0.6/js/dataTables.js"></script>
+<script defer src="https://cdn.datatables.net/2.0.6/js/dataTables.bootstrap4.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css">
-    <script src='https://unpkg.com/leaflet@1.3.3/dist/leaflet.js'></script>
-    <style type="text/css">
-        #map { height: 300px;
-                width: 100%;
-        }
+    
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+     <link href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css' rel='stylesheet'>
+     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <style>
+        #map { height: 180px; 
+              
+            }
         </style>
 
  
@@ -265,85 +259,44 @@ echo "<SCRIPT> //not showing me this
                     <!-- card -->
                     <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Tambah Data</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary"> Data User</h6>
                                 </div>
                                 <div class="card-body">
-                                <div id="map" class='col-sm-0'></div>
-                                <script>  var map = L.map('map').setView([-7.8030634,110.3229557], 12);
-                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-                                    var marker = null;
-
-                                    function onMapClick(e) {
-                                    if (marker !== null) {
-                                    map.removeLayer(marker);
-                                        }
-
-
-                                        marker = new L.Marker(e.latlng);
-                                        map.addLayer(marker);
-                                        marker.bindPopup("<Center><b>Latidue dan Longitude:</b><br/></Center>"+ e.latlng.toString());
-                                        
-                                        
-                                        
-
-                                        var lat = e.latlng.lat;
-                                        var lng = e.latlng.lng;
-
-                                        $('#Latitude').val(lat);
-                                        $('#Longitude').val(lng);
-                                        
-                                    }
-
-                                    map.on('click', onMapClick);
-
-                                </script>
-                                <br>
+                                <table class="table table-bordered" id="data" name="data" width="100%" cellspacing="0">
+                                    <thead><tr>
+                                    <th width="5%">No</th>
+                                    <th width="10%">Username</th>
+                                    <th>Nama</th>
+                                    <th width="16%">Action</th>
+                                    </tr></thead>
+                                    <tfoot><tr>
+                                    <th>No</th>
+                                    <th>Username</th>
+                                    <th>Nama</th>
+                                    
+                                    <th>Action</th>
+                                    </tr></tfoot>
+                                    <tbody>
+                                    <?php
+                                    
+                                    $result = mysqli_query($db, "SELECT * FROM user 
+                                    WHERE level='user'"); $i=1;
+                                    while($data_jalan = mysqli_fetch_array($result)) { ?>
+                                    <tr><td><?php echo $i; $i++; ?></td>
+                                    <td><?php echo $data_jalan['username'];?></td>
+                                    <td><?php echo $data_jalan['nama'];?></td>
+                                    
                                  <form action="" method="POST" enctype="multipart/form-data">
-                                 <label for="latlng"><b>Latitude & Longitude</b></label>
-                                 <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user" id="Latitude" name="latitude" placeholder="Latitude"></div>
-                                    <div class="col-sm-6">
-                                    <input type="text" class="form-control form-control-user" id="Longitude" name="longitude" placeholder="Longitude"></div>
-                                    </div>
-                                    
-                                    <label for="exampleFormControlInput1"><b>Tanggal,Waktu & Kabupaten</b></label>
-                                    <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="datetime-local" class="form-control form-control-user" name="tanggal" id="tanggal"></div>
-                                    <div class="col-sm-6">
-                                    <select class="form-control form-control-user" name="kabupaten" placeholder="Kabupaten">
-                                    <option value="1">1. Sleman</option>
-                                    <option value="2">2. Bantul</option>
-                                    <option value="3">3. Gunung Kidul</option>
-                                    <option value="4">4. Kota Yogyakarta</option>
-                                    <option value="5">5. Kulonprogo</option>
-                                    </select></div></div>
-                                    
-                                    <label for="lokasi"><b>Lokasi</b></label>
-                                    <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" name="alamat" placeholder="Lokasi"></div><div class="col-sm-2 "></div>
-                                    <label for="exampleFormControlInput1"><b>Kondisi dan Keterangan</b></label><div class="form-group row">
-                                    <div class="col-sm-4 mb-3 mb-sm-0">
-                                    <label><input type="radio" name="kondisi" id="optionsRadios1" value="rusak ringan" checked="">&nbsp;&nbsp;Rusak Ringan</label><br>
-                                    <label><input type="radio" name="kondisi" id="optionsRadios2"  value="rusak berat">&nbsp;&nbsp;Rusak Berat</label><br>
-                                    <label><input type="radio" name="kondisi" id="optionsRadios3"  value="berbahaya">&nbsp;&nbsp;Berbahaya Dilalui</label><br>
-                                    
-                                    <label><input type="file" name="foto"></label>
-                                   
-                                </div>
-                                    <div class="col-sm-8">
-                                    <textarea class="form-control" rows="5" name="keterangan" placeholder="Keterangan"></textarea>
+                                 <input type="hidden" name="id_data" value="<?php echo $data_jalan['id_user'];?>">
+                                    <td>
 
-                                     </div>
-                                      </div>     
-                                      
-                                      <div class="form-group row" ><div class="col-sm-3"><input type="submit" name="submit" class="btn btn-primary rounded-pill "></div></div>
-                                    
+                                    <button type="submit" name="hapus" class="btn btn-danger" value='hapus' onclick="return confirm('Yakin menghapus user <?php echo $data_jalan['nama'];?> ??')">Hapus</button>
 
+                                    <a href="#" data-toggle="modal" data-target="#edit"><input type="submit" name="ubah" class="btn btn-primary" value="Edit"></td></tr>
 
-                                </form>
+                                    </form>
+                                    <?php } ?></tbody>
+                                    </table>
                                 </div>
                             </div>
 
@@ -376,8 +329,8 @@ echo "<SCRIPT> //not showing me this
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="test"
+        <!-- Logout Modal-->
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="test"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -398,11 +351,44 @@ echo "<SCRIPT> //not showing me this
         </div>
     </div>
 
+        <!-- Logout Modal-->
+        <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="test"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit User</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Yakin Keluar dari akun ini ?
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <form action="" method="POST">
+                    <button name="logout"  class="btn btn-primary">Simpan</button>
+                    </from>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap core JavaScript-->
+    
     <script> $('#tanggal').datepicker({
         "setDate": new Date(),
-        "autoclose": true
-});</script>
+        "autoclose": true});
+
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<!-- Datatables -->
+<script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
@@ -418,6 +404,12 @@ echo "<SCRIPT> //not showing me this
     <!-- Page level custom scripts -->
     <script src="js/demo/chart-area-demo.js"></script>
     <script src="js/demo/chart-pie-demo.js"></script>
+    <script >
+
+$(document).ready( function () {
+    $('#data').DataTable();
+} );
+</script>
 
 </body>
 

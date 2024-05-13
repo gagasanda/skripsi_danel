@@ -8,6 +8,10 @@ header("Location: index.php");
 exit();
 }
 
+$id = $_GET['id'];
+$data = mysqli_query($db, "SELECT * FROM data_jalan WHERE id='$id'");
+$adata = mysqli_fetch_array($data);
+
 if (isset($_POST['submit'])) {
     $latitude = $_POST['latitude'];
     $logitude = $_POST['longitude']; 
@@ -23,11 +27,10 @@ if (isset($_POST['submit'])) {
     
    $fotodb = $rand.'_'.$foto;   
 move_uploaded_file($_FILES['foto']['tmp_name'], 'foto/'.$rand.'_'.$foto);
-$sql = "INSERT INTO data_jalan (id_user, latitude, longitude, tanggal, id_kabupaten, alamat, kondisi_jalan, keterangan, foto, status)
-VALUES ('$id_user','$latitude', '$logitude', '$tanggal', '$kabupaten', '$alamat', '$kondisi', '$keterangan', '$fotodb', '$status')";
+$sql = "UPDATE data_jalan SET id_user='$id_user', latitude='$latitude', longitude='$logitude', tanggal='$tanggal', id_kabupaten='$kabupaten', alamat='$alamat', kondisi_jalan='$kondisi', keterangan='$keterangan', foto='$fotodb' WHERE id=$id ";
 mysqli_query($db, $sql);
 
-$message = 'Data Berhasil Di Tambahkan';
+$message = 'Data Berhasil Di Ubah';
 echo "<SCRIPT> //not showing me this
         alert('$message')
         window.location.replace('tabeldata.php');
@@ -265,15 +268,16 @@ echo "<SCRIPT> //not showing me this
                     <!-- card -->
                     <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Tambah Data</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Edit Data</h6>
                                 </div>
                                 <div class="card-body">
                                 <div id="map" class='col-sm-0'></div>
                                 <script>  var map = L.map('map').setView([-7.8030634,110.3229557], 12);
                                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-                                    var marker = null;
-
+                                    
+                                    var marker = 
+            L.marker([<?php echo $adata['latitude'];?>,<?php echo $adata['longitude'];?>]).addTo(map);
+      
                                     function onMapClick(e) {
                                     if (marker !== null) {
                                     map.removeLayer(marker);
@@ -303,43 +307,43 @@ echo "<SCRIPT> //not showing me this
                                  <label for="latlng"><b>Latitude & Longitude</b></label>
                                  <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="text" class="form-control form-control-user" id="Latitude" name="latitude" placeholder="Latitude"></div>
+                                    <input type="text" class="form-control form-control-user" id="Latitude" name="latitude" value="<?php echo $adata['latitude'];?>"></div>
                                     <div class="col-sm-6">
-                                    <input type="text" class="form-control form-control-user" id="Longitude" name="longitude" placeholder="Longitude"></div>
+                                    <input type="text" class="form-control form-control-user" id="Longitude" name="longitude" value="<?php echo $adata['longitude'];?>"></div>
                                     </div>
                                     
                                     <label for="exampleFormControlInput1"><b>Tanggal,Waktu & Kabupaten</b></label>
                                     <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                    <input type="datetime-local" class="form-control form-control-user" name="tanggal" id="tanggal"></div>
+                                    <input type="datetime-local" class="form-control form-control-user" name="tanggal" value="<?php echo $adata['tanggal']; ?>"></div>
                                     <div class="col-sm-6">
                                     <select class="form-control form-control-user" name="kabupaten" placeholder="Kabupaten">
-                                    <option value="1">1. Sleman</option>
-                                    <option value="2">2. Bantul</option>
-                                    <option value="3">3. Gunung Kidul</option>
-                                    <option value="4">4. Kota Yogyakarta</option>
-                                    <option value="5">5. Kulonprogo</option>
+                                    <option value="1" <?php if ($adata['id_kabupaten']=='1') echo 'selected' ?>>1. Sleman</option>
+                                    <option value="2" <?php if ($adata['id_kabupaten']=='2') echo 'selected' ?> >2. Bantul</option>
+                                    <option value="3"<?php if ($adata['id_kabupaten']=='3') echo 'selected' ?>>3. Gunung Kidul</option>
+                                    <option value="4"<?php if ($adata['id_kabupaten']=='4') echo 'selected' ?>>4. Kota Yogyakarta</option>
+                                    <option value="5"<?php if ($adata['id_kabupaten']=='5') echo 'selected' ?>>5. Kulonprogo</option>
                                     </select></div></div>
                                     
                                     <label for="lokasi"><b>Lokasi</b></label>
                                     <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" name="alamat" placeholder="Lokasi"></div><div class="col-sm-2 "></div>
+                                    <input type="text" class="form-control form-control-user" name="alamat" value="<?php echo $adata['alamat']; ?>"></div><div class="col-sm-2 "></div>
                                     <label for="exampleFormControlInput1"><b>Kondisi dan Keterangan</b></label><div class="form-group row">
                                     <div class="col-sm-4 mb-3 mb-sm-0">
-                                    <label><input type="radio" name="kondisi" id="optionsRadios1" value="rusak ringan" checked="">&nbsp;&nbsp;Rusak Ringan</label><br>
-                                    <label><input type="radio" name="kondisi" id="optionsRadios2"  value="rusak berat">&nbsp;&nbsp;Rusak Berat</label><br>
-                                    <label><input type="radio" name="kondisi" id="optionsRadios3"  value="berbahaya">&nbsp;&nbsp;Berbahaya Dilalui</label><br>
+                                    <label><input type="radio" name="kondisi" id="optionsRadios1" value="rusak ringan" <?php if ($adata['kondisi_jalan']=='rusak ringan') echo 'checked' ?>>&nbsp;&nbsp;Rusak Ringan</label><br>
+                                    <label><input type="radio" name="kondisi" id="optionsRadios2"  value="rusak berat"  <?php if($adata['kondisi_jalan']=="rusak berat") echo 'checked' ?> >&nbsp;&nbsp;Rusak Berat</label><br>
+                                    <label><input type="radio" name="kondisi" id="optionsRadios3"  value="berbahaya" <?php if ($adata['kondisi_jalan']=='berbahaya') echo 'checked'?>>&nbsp;&nbsp;Berbahaya Dilalui</label><br>
                                     
                                     <label><input type="file" name="foto"></label>
                                    
                                 </div>
                                     <div class="col-sm-8">
-                                    <textarea class="form-control" rows="5" name="keterangan" placeholder="Keterangan"></textarea>
+                                    <textarea class="form-control" rows="5" name="keterangan" ><?php echo $adata['keterangan']; ?></textarea>
 
                                      </div>
                                       </div>     
                                       
-                                      <div class="form-group row" ><div class="col-sm-3"><input type="submit" name="submit" class="btn btn-primary rounded-pill "></div></div>
+                                      <div class="form-group row" ><div class="col-sm-3"><input type="submit" name="submit" class="btn btn-success rounded-pill "> <input type="submit" name="submit" class="btn btn-primary rounded-pill " value="Cancle"></div></div>
                                     
 
 
